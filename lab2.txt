@@ -1,2 +1,12 @@
 Answer written questions 1 and 2 here.
 
+Q1 ANSWER:
+The coordinate system works on a 2-Dimensional plane characterized by 2D Vectors via sf::Vector2f. This way we can calculate the vector from the ship to the mouse, and use std::atan2 to calculate that vectors angle-offset from the x-axis which we can apply to our bullet (after normalizing it of course).
+There are no suprising differences from what I expect, after all, games use linear algebra to track things like this.
+
+
+Q2 ANSWER:
+The benefit is that the games state is no longer intertwined with the medium of input. It separates the game itself from just parsing input,
+therefore reducing the chance of creating input-related bugs within the code thats meant to manage the games *state*.
+
+
