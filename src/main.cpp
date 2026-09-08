@@ -145,6 +145,17 @@ struct Bullet : public sf::Drawable {
         //      - lifetime <= 0.0f, or
         //      - bullet is off screen (use shape.getPosition() and
         //        WINDOW_WIDTH and WINDOW_HEIGHT)
+
+        shape.move(velocity); // moving the bullet
+        lifetime -= 1.0f / 60.0f; // decreasing the lifetime
+
+        const auto bulletPos = shape.getPosition();
+        if (lifetime <= 0.0f || bulletPos.x < 0 || bulletPos.x > WINDOW_WIDTH || 
+        bulletPos.y < 0 || bulletPos.y > WINDOW_HEIGHT) { // checking if bullet out of  bounds
+            isAlive = false;
+        }
+
+
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
@@ -199,6 +210,8 @@ public:
     void setRotation(sf::Angle angle) { mSpaceshipSprite.setRotation(angle); }
     sf::Angle getRotation() { return mSpaceshipSprite.getRotation(); }
 
+
+
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
         target.draw(mSpaceshipHitbox, states);
@@ -246,6 +259,18 @@ public:
         //  - Consider whether the user wants to shoot, and also the cooldown.
         //  - Bullet direction is the same as the spaceship's facing direction.
         //  - Bullet should be shot from the current spaceship position.
+
+        if (inputSummary.shootingDesired && (mShootClock.getElapsedTime().asSeconds() > SHOOT_COOLDOWN)) {
+            // if player wants to shoot and the cooldown is over:
+
+            mBullets.push_back(Bullet(mSpaceship.getPosition(), BULLET_SPEED * facingVector.normalized()));
+            // Create the bullet. The direction vector is alreday calculated (i.e. faceingVector), we just need to normalize it and multiply it by the bullet speed.
+
+            mShootClock.restart();
+            // start the cooldown again.
+
+        
+        }
 
         // --- Update Asteroids ---
         for (auto& asteroid : mAsteroids) {
@@ -306,6 +331,10 @@ private:
     void processCollisionsSpaceshipAsteroid() {
         for (auto& asteroid : mAsteroids) {
             if (!asteroid.isAlive) continue;
+            if (circlesIntersect(asteroid.shape.getPosition(), asteroid.shape.getRadius(),
+            mSpaceship.getPosition(), mSpaceship.hitboxRadius())) {
+                asteroid.isAlive = false; 
+            }
             // =====
             // TODO: Use Circle-Circle intersection test (circlesIntersect)
             // to determine if the spaceship's hitbox collides with an asteroid.
@@ -331,10 +360,19 @@ private:
         aux.swap(mAsteroids);
     }
 
-    void cleanupDeadBullets() {
+    inline void cleanupDeadBullets() {
         // =====
         // TODO: What should we do with dead bullet objects? Just keep them lying around taking up
         // space in memory?
+        std::vector<Bullet> aux;
+        aux.reserve(mBullets.size());
+        for (const auto& bullet : mBullets) {
+            if (bullet.isAlive) {
+                aux.push_back(bullet);
+            }
+        }
+        aux.swap(mBullets);
+        // Pretty much just copying the logic from cleanupDeadAsteroids.
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override {

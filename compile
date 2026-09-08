@@ -1,0 +1,6 @@
+
+#!/bin.bash
+cmake --preset debug # On lab machine, use `cmake -S . -B build` instead
+cmake --build build
+chmod u+x build/Asteroids
+./build/Asteroids
