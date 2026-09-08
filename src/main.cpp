@@ -147,7 +147,7 @@ struct Bullet : public sf::Drawable {
         //        WINDOW_WIDTH and WINDOW_HEIGHT)
 
         shape.move(velocity); // moving the bullet
-        lifetime -= 1.0f / 60.0f; // decreasing the lifetime
+        lifetime -= 0.1f; // decreasing the lifetime
 
         const auto bulletPos = shape.getPosition();
         if (lifetime <= 0.0f || bulletPos.x < 0 || bulletPos.x > WINDOW_WIDTH || 
@@ -317,8 +317,10 @@ private:
                 // Check if bullet circle intersects with asteroid circle
                 if (circlesIntersect(bullet.shape.getPosition(), bullet.shape.getRadius(),
                                      asteroid.shape.getPosition(), asteroid.shape.getRadius())) {
+                    mExplosionSound.play();
                     bullet.isAlive = false;
                     asteroid.isAlive = false;
+                    cleanup(); // clean up both astroid and bullet.
                     // TODO: Add Explosion Sound Effect
                     // Play explosion sound!
 
@@ -334,6 +336,8 @@ private:
             if (circlesIntersect(asteroid.shape.getPosition(), asteroid.shape.getRadius(),
             mSpaceship.getPosition(), mSpaceship.hitboxRadius())) {
                 asteroid.isAlive = false; 
+                cleanupDeadAsteroids(); // cleaning up dead astroids 
+                mExplosionSound.play();
             }
             // =====
             // TODO: Use Circle-Circle intersection test (circlesIntersect)
